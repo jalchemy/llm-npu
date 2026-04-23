@@ -1,7 +1,7 @@
 # Stage 1: Build Ollama-OV from source
 FROM ubuntu:24.04 AS builder
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y git go-golang cmake build-essential curl
+RUN apt-get update && apt-get install -y git golang cmake build-essential curl libtbb-dev ocl-icd-opencl-dev
 
 # Download and Setup GenAI Runtime (2026.1)
 WORKDIR /opt
@@ -10,6 +10,7 @@ RUN curl -L https://storage.openvinotoolkit.org/repositories/openvino_genai/pack
 # Build Ollama-OV
 WORKDIR /build
 RUN git clone https://github.com/openvinotoolkit/openvino_contrib.git
+RUN sed -i 's/OV_GENAI_STREAMMING_STATUS/OV_GENAI_STREAMING_STATUS/g' /build/openvino_contrib/modules/ollama_openvino/genai/genai.go
 WORKDIR /build/openvino_contrib/modules/ollama_openvino
 ENV CGO_ENABLED=1
 ENV OpenVINO_DIR=/opt/openvino_genai_ubuntu24_2026.1.0.0_x86_64/runtime
@@ -25,13 +26,13 @@ COPY --from=builder /build/openvino_contrib/modules/ollama_openvino/ollama /usr/
 # Install uv and system dependencies
 RUN apt-get update && apt-get install -y python3 curl libtbb12 && \
     curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin:${PATH}"
+ENV PATH="/root/.local/bin:${PATH}"
 
 # Configure Environment
 ENV LD_LIBRARY_PATH="/opt/ov_genai/runtime/lib/intel64"
 ENV GODEBUG=cgocheck=0
 WORKDIR /app
 COPY . .
-RUN uv pip install --system modelscope questionary
+RUN uv pip install --system --break-system-packages modelscope questionary
 
 ENTRYPOINT ["ollama", "serve"]
