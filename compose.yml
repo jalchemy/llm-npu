@@ -3,7 +3,5 @@ services:
     build: .
     volumes:
       - ./models:/models
-    devices:
-      - /dev/accel:/dev/accel
     ports:
       - "11434:11434"

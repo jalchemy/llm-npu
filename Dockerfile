@@ -1,5 +1,5 @@
 # Stage 1: Build Ollama-OV from source
-FROM public.ecr.aws/ubuntu/ubuntu:24.04 AS builder
+FROM ubuntu:24.04 AS builder
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y git golang cmake build-essential curl libtbb-dev ocl-icd-opencl-dev
 
@@ -52,7 +52,7 @@ ENV CGO_CXXFLAGS="-I${OpenVINO_DIR}/include -std=c++17"
 RUN go build -o ollama
 
 # Stage 2: Runtime
-FROM public.ecr.aws/ubuntu/ubuntu:24.04
+FROM ubuntu:24.04
 COPY --from=builder /opt/openvino_genai_ubuntu24_2026.1.0.0_x86_64 /opt/ov_genai
 COPY --from=builder /build/openvino_contrib/modules/ollama_openvino/ollama /usr/bin/ollama
 
