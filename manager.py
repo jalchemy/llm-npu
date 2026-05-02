@@ -63,19 +63,48 @@ def main():
 
     if args.test_mode:
         selection_name = options[0]
+        accel_mode = "Standard"
     else:
         selection_name = questionary.select(
             "Select an NPU-optimized model to deploy:",
             choices=options + ["Exit"]
         ).ask()
 
-        if selection_name == "Exit": return
+        if selection_name == "Exit" or selection_name is None: return
+
+        accel_mode = questionary.select(
+            "Select Acceleration Mode:",
+            choices=["Standard", "Speculative", "EAGLE-3"]
+        ).ask()
+
+        if accel_mode is None: return
 
     model_data = next(m for m in registry["npu_optimized"] if m["name"] in selection_name)
     folder_name = model_data["name"].lower().replace("-", "_")
 
-    # 1. Download
+    # 1. Download main model
     download_model(model_data["id"], folder_name)
+
+    # 1b. Dual-Download Logic for Draft Model
+    if accel_mode in ["Speculative", "EAGLE-3"]:
+        draft_options = [f"{m['name']} ({m['type']})" for m in registry.get("draft_models", [])]
+
+        if args.test_mode:
+            draft_selection_name = draft_options[0] if draft_options else None
+        else:
+            draft_selection_name = questionary.select(
+                "Select a Draft Model:",
+                choices=draft_options
+            ).ask()
+
+            if draft_selection_name is None: return
+
+        if draft_selection_name:
+            draft_model_data = next(m for m in registry["draft_models"] if m["name"] in draft_selection_name)
+            draft_subfolder = "eagle_model" if accel_mode == "EAGLE-3" else "draft_model"
+            target_draft_folder = f"{folder_name}/{draft_subfolder}"
+
+            download_model(draft_model_data["id"], target_draft_folder)
 
     # 2. Package
     tar_path = package_model(folder_name)
