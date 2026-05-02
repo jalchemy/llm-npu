@@ -24,5 +24,19 @@
       "type": "VLM",
       "description": "Vision-Language Model - NPU Base support"
     }
+  ],
+  "draft_models": [
+    {
+      "name": "Qwen-2.5-coder-0.5B",
+      "id": "Qwen/Qwen2.5-Coder-0.5B-Instruct-OV",
+      "type": "LLM",
+      "description": "0.5B standard draft model"
+    },
+    {
+      "name": "Qwen3-8B_eagle3",
+      "id": "zhaohb/Qwen3-8B_eagle3_ov",
+      "type": "LLM",
+      "description": "EAGLE-3 multi-head draft"
+    }
   ]
 }
