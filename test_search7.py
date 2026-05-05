@@ -1,0 +1,8 @@
+import requests
+
+try:
+    response = requests.get('https://modelscope.cn/api/v1/models', params={'name_or_path': 'openvino', 'page_size': 5})
+    print(response.status_code)
+    print(response.text[:200])
+except Exception as e:
+    print(e)
